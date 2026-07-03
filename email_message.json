@@ -1,0 +1,60 @@
+{
+  "name": "email_message",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [0, 0],
+      "id": "2cf8cec8-72db-4f4a-b0d8-47c6335842f8",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "sendTo": "khem6333@gmail.com",
+        "subject": "Test Email",
+        "message": "I love n8n automation but I love the code route more!",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [208, 0],
+      "id": "7efa31e9-117a-4a57-9e88-1b71b764f511",
+      "name": "Send a message",
+      "webhookId": "7e175031-d72e-4ffe-a55d-621b09469a0a",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "aUuf0kFwzXLoPYlg",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "914d25e0-fefd-4b52-b188-57ebe07b249f",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f4dacff6a251be1a339d209c8e33d7a0524eaedd4c5250abe42b4b37d52518da"
+  },
+  "nodeGroups": [],
+  "id": "xIDrJcuBLAaug3ka",
+  "tags": []
+}
