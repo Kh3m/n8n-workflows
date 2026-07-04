@@ -1,0 +1,215 @@
+{
+  "name": "lead_collection_workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Customer Services",
+        "formDescription": "Provide information about the service you'd want from us and we'll get back as soon as possible.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Name",
+              "placeholder": "Enter your name",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Services",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Consultation"
+                  },
+                  {
+                    "option": "Training"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Message",
+              "fieldType": "textarea"
+            }
+          ]
+        },
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        0,
+        0
+      ],
+      "id": "535175bc-02b9-4091-a4df-3cd8b8c638f6",
+      "name": "On form submission",
+      "webhookId": "cd3646f6-badf-4bfb-969d-e4bc17fcaca0"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1kE-BOf_PpPwNY0_4ECofJWa9GmIvXxv3p7JTZ82k0NA",
+          "mode": "list",
+          "cachedResultName": "n8n_lead_workflow",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1kE-BOf_PpPwNY0_4ECofJWa9GmIvXxv3p7JTZ82k0NA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Leads",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1kE-BOf_PpPwNY0_4ECofJWa9GmIvXxv3p7JTZ82k0NA/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Name": "={{ $json.Name }}",
+            "Services": "={{ $json.Services }}",
+            "Converted": "False",
+            "Message": "={{ $json.Message }}",
+            "Created At": "={{ $json.submittedAt }}"
+          },
+          "matchingColumns": [
+            "Name"
+          ],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Services",
+              "displayName": "Services",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Converted",
+              "displayName": "Converted",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Message",
+              "displayName": "Message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Created At",
+              "displayName": "Created At",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        208,
+        0
+      ],
+      "id": "15c959a5-a3dd-4630-b84e-3e63035957f4",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "rHu0qd5EEIUTQVt0",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "khemwork1@gmail.com",
+        "subject": "=Lead - {{ $json.Name }}",
+        "message": "=Hello, Admin\n\nA form was submitted by {{ $json.Name }} on {{ $today }} for service {{ $json.Services }} with the below message:\n\n{{ $json.Message }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        416,
+        0
+      ],
+      "id": "1733e823-f1d3-42ac-a496-01b1c5da247e",
+      "name": "Send a message",
+      "webhookId": "0c248449-766b-448a-8920-b38bd7e8399b",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "aUuf0kFwzXLoPYlg",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "fcb9dd29-fadd-4119-9889-82a285702c90",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f4dacff6a251be1a339d209c8e33d7a0524eaedd4c5250abe42b4b37d52518da"
+  },
+  "nodeGroups": [],
+  "id": "9UXoYXC59LWnkjcP",
+  "tags": []
+}
