@@ -1,0 +1,430 @@
+{
+  "name": "api_automation_workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1kE-BOf_PpPwNY0_4ECofJWa9GmIvXxv3p7JTZ82k0NA",
+          "mode": "list",
+          "cachedResultName": "n8n_lead_workflow",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1kE-BOf_PpPwNY0_4ECofJWa9GmIvXxv3p7JTZ82k0NA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 718935973,
+          "mode": "list",
+          "cachedResultName": "Customers",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1kE-BOf_PpPwNY0_4ECofJWa9GmIvXxv3p7JTZ82k0NA/edit#gid=718935973"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        32,
+        -16
+      ],
+      "id": "d9192a02-5938-4d89-b9d0-d3d995b3b04d",
+      "name": "Get row(s) in Customer sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "rHu0qd5EEIUTQVt0",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://api.genderize.io",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "name",
+              "value": "={{ $json.Name }}"
+            }
+          ]
+        },
+        "options": {
+          "batching": {
+            "batch": {
+              "batchSize": 1
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        240,
+        -16
+      ],
+      "id": "19e04525-1532-4715-94b3-3946bece6366",
+      "name": "Gender",
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "url": "https://api.agify.io",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "name",
+              "value": "={{ $json.name }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        480,
+        -16
+      ],
+      "id": "0012d74c-557d-431b-ae0d-3a554f01a330",
+      "name": "Age",
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "url": "https://api.nationalize.io",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "name",
+              "value": "={{ $('Get row(s) in Customer sheet').item.json.Name }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        688,
+        -16
+      ],
+      "id": "2057f2b1-8c46-4bdd-a74a-86e462cff8f2",
+      "name": "Nationality",
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1kE-BOf_PpPwNY0_4ECofJWa9GmIvXxv3p7JTZ82k0NA",
+          "mode": "list",
+          "cachedResultName": "n8n_lead_workflow",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1kE-BOf_PpPwNY0_4ECofJWa9GmIvXxv3p7JTZ82k0NA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 718935973,
+          "mode": "list",
+          "cachedResultName": "Customers",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1kE-BOf_PpPwNY0_4ECofJWa9GmIvXxv3p7JTZ82k0NA/edit#gid=718935973"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Name": "={{ $json.name }}",
+            "Budget": "={{ $('Get row(s) in Customer sheet').item.json.Budget }}",
+            "Gender": "={{ $('Gender').item.json.gender }}",
+            "Age": "={{ $('Age').item.json.age }}",
+            "Natiolnality": "={{ $json.country[0].country_id }}",
+            "id": "={{ $('Get row(s) in Customer sheet').item.json.id }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Budget",
+              "displayName": "Budget",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Gender",
+              "displayName": "Gender",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Age",
+              "displayName": "Age",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Natiolnality",
+              "displayName": "Natiolnality",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        896,
+        -16
+      ],
+      "id": "85e60b58-e105-47d6-ba7f-4bc7101d86e8",
+      "name": "Append or update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "rHu0qd5EEIUTQVt0",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyX",
+              "value": 1,
+              "unit": "minutes"
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "1kE-BOf_PpPwNY0_4ECofJWa9GmIvXxv3p7JTZ82k0NA",
+          "mode": "list",
+          "cachedResultName": "n8n_lead_workflow",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1kE-BOf_PpPwNY0_4ECofJWa9GmIvXxv3p7JTZ82k0NA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 718935973,
+          "mode": "list",
+          "cachedResultName": "Customers",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1kE-BOf_PpPwNY0_4ECofJWa9GmIvXxv3p7JTZ82k0NA/edit#gid=718935973"
+        },
+        "event": "rowAdded",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        112,
+        192
+      ],
+      "id": "d9771277-990c-4922-8dab-31838d27a5bd",
+      "name": "Google Sheets Trigger",
+      "credentials": {
+        "googleSheetsTriggerOAuth2Api": {
+          "id": "DtUE2ZRw5rcBjH5v",
+          "name": "Google Sheets Trigger OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "aiwithkhem@gmail.com",
+        "subject": "={{ $json.output[0].content[0].text.subject }}",
+        "message": "={{ $json.output.first().content.first().text.body }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        816,
+        224
+      ],
+      "id": "9dabbd98-0fd3-44ba-b0fe-8d626e618f89",
+      "name": "Send a message",
+      "webhookId": "1b94275a-f64a-4e71-9e63-783a30d49b23",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "aUuf0kFwzXLoPYlg",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -208,
+        -16
+      ],
+      "id": "79c8e7ee-ba65-4514-a2a1-f7b58c6c59e6",
+      "name": "When clicking ‘Execute workflow’"
+    }
+  ],
+  "pinData": {
+    "Google Sheets Trigger": [
+      {
+        "json": {
+          "id": "",
+          "Name": "Abdulkareem Adamu",
+          "Budget": "N120000000",
+          "Gender": "male",
+          "Age": 42,
+          "Natiolnality": "NG"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "id": 1,
+          "Name": "Abibat Adams",
+          "Budget": "N6520900",
+          "Gender": "female",
+          "Age": 40,
+          "Natiolnality": "NG"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Get row(s) in Customer sheet": {
+      "main": [
+        [
+          {
+            "node": "Gender",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gender": {
+      "main": [
+        [
+          {
+            "node": "Age",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Age": {
+      "main": [
+        [
+          {
+            "node": "Nationality",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Nationality": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in Customer sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in Customer sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "ad2b6363-9237-4e7c-97ba-71774fa36431",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f4dacff6a251be1a339d209c8e33d7a0524eaedd4c5250abe42b4b37d52518da"
+  },
+  "nodeGroups": [],
+  "id": "TNEGalPRp3S1mj7h",
+  "tags": []
+}

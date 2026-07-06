@@ -1,0 +1,331 @@
+{
+  "name": "gmail_reply_agent",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Gmail Reply Agent\n\n**Steps:**\n\n1. Check email for unreplied messages \n2. Get the messages\n3. Add the message to corresponding labels: \"enquiries\", \"consultation\", \"complains\"\n4. Draft a reply for the email\n",
+        "height": 352,
+        "width": 320
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -848,
+        -80
+      ],
+      "typeVersion": 1,
+      "id": "60116904-a50c-4b00-ad56-00a6755930ad",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "maxResults": 1,
+        "filters": {
+          "readStatus": "unread"
+        }
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -352,
+        -16
+      ],
+      "id": "3cc11add-ecd4-4fab-842e-0e6ab3ae4726",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "R9uZAlBUPByGXVuD",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an Email Reply assistant and you have to reply to a user's email:\n\n\"\"\"\nSubject: {{ $json.Subject }}\n\nBody: {{ $json.snippet }}\n\"\"\"\n\nFollowing the following reply rules:\n- You should maintain a friendly tune while replying\n- Ensure the content is humanized and all em-dashes are removed\nStructure Output:\n- Ensure the output are in json format below is a sample:\n{\n  \"subject\": \"string\",\n  \"body\": \"Hello, Abdulkareem. We got your message\",\n  \"label\":\"enquiries\",\n  \"label_id\": \"Label_3345\"\n}\n- The body should be html friendly.\n\nYou have access to the following tools:\ngmail_get_labels - This provides you with the required labels and use only the user created labes (\"enquiries\", \"consultation\", \"complains\")\n",
+        "hasOutputParser": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -144,
+        -16
+      ],
+      "id": "1510bf4f-6e58-4afb-821d-7ae0289508bb",
+      "name": "AI Agent",
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"subject\": \"string\",\n  \"body\": \"Hello, Abdulkareem. We got your message\",\n  \"label\":\"enquiries\",\n  \"label_id\": \"Label_3345\"\n}\n"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        112,
+        192
+      ],
+      "id": "3ee7ea11-5c0a-4453-9627-791e4d649183",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "gpt-4o"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -192,
+        192
+      ],
+      "id": "0ce294f2-ca74-4b08-9294-f3e92e3a6d4d",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "draft",
+        "subject": "={{ $('AI Agent').item.json.output.subject }}",
+        "emailType": "html",
+        "message": "={{ $('AI Agent').item.json.output.body }}",
+        "options": {
+          "threadId": "={{ $('Gmail Trigger').item.json.threadId }}",
+          "sendTo": "={{ $('Gmail Trigger').item.json.From }}"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        368,
+        -16
+      ],
+      "id": "5f4862f8-913b-46ea-a5c2-45d4a2044d4a",
+      "name": "Create a draft",
+      "webhookId": "bb1715e5-3bbd-48e0-b2ee-6f1e28182edb",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "R9uZAlBUPByGXVuD",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "label",
+        "returnAll": true
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        -32,
+        208
+      ],
+      "id": "8d1e4db5-681f-464d-9fd0-f4b45988419c",
+      "name": "gmail_get_labels",
+      "webhookId": "2b020bcd-67e2-47eb-822e-fcf2eb24dd15",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "R9uZAlBUPByGXVuD",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}",
+        "labelIds": "={{ $json.output.label_id }}"
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        192,
+        -16
+      ],
+      "id": "0e8b38ce-cf34-4be0-bd29-e1eb3f93f13e",
+      "name": "Add label to message",
+      "webhookId": "b9d59ed1-4bd5-40dd-bc6a-5dda6a6e1017",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "R9uZAlBUPByGXVuD",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "AI Agent": [
+      {
+        "json": {
+          "output": {
+            "subject": "Re: Reaching out regarding an issue",
+            "body": "Hello!<br><br>Thank you for reaching out to us. I’m sorry to hear about the issue with your product. We’re here to help!<br><br>To process a refund and a replacement, please follow the steps below:<br>1. Kindly visit our website and log in to your account.<br>2. Navigate to the 'Orders' section and select the product in question.<br>3. Click 'Request Refund/Replacement' and fill out the form.<br><br>If you need any further assistance, feel free to reply to this email. We want to ensure you’re completely satisfied with your purchase!<br><br>Have a great day!<br><br>Best regards,<br>Your Customer Support Team",
+            "label": "complains",
+            "label_id": "Label_1058565291723745090"
+          }
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ],
+    "Gmail Trigger": [
+      {
+        "json": {
+          "id": "19f36f551b5b7315",
+          "threadId": "19f36f551b5b7315",
+          "snippet": "Hello, good morning. Please, I am reaching out regarding the product I got from you guys. It&#39;s bad. How can I get a refund and a replacement?",
+          "payload": {
+            "mimeType": "multipart/alternative"
+          },
+          "sizeEstimate": 7211,
+          "historyId": "130294",
+          "internalDate": "1783333456000",
+          "labels": [
+            {
+              "id": "INBOX",
+              "name": "INBOX"
+            },
+            {
+              "id": "IMPORTANT",
+              "name": "IMPORTANT"
+            },
+            {
+              "id": "CATEGORY_PERSONAL",
+              "name": "CATEGORY_PERSONAL"
+            },
+            {
+              "id": "UNREAD",
+              "name": "UNREAD"
+            }
+          ],
+          "From": "Khem Khem <khem6333@gmail.com>",
+          "Subject": "Reaching out regarding an issue",
+          "To": "khemwork1@gmail.com"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ],
+    "Add label to message": [
+      {
+        "json": {
+          "id": "19f36f551b5b7315",
+          "threadId": "19f36f551b5b7315",
+          "labelIds": [
+            "UNREAD",
+            "IMPORTANT",
+            "Label_1058565291723745090",
+            "CATEGORY_PERSONAL",
+            "INBOX"
+          ]
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Add label to message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "gmail_get_labels": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add label to message": {
+      "main": [
+        [
+          {
+            "node": "Create a draft",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "7a866767-9e9d-4f64-b1bf-992c6a9b81e3",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f4dacff6a251be1a339d209c8e33d7a0524eaedd4c5250abe42b4b37d52518da"
+  },
+  "nodeGroups": [],
+  "id": "KJFqcVhd1QQ2cELv",
+  "tags": []
+}
