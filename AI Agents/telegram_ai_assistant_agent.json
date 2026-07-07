@@ -1,0 +1,451 @@
+{
+  "name": "telegram_ai_assistant_agent",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -816,
+        -96
+      ],
+      "id": "72cd5a79-cb48-47c2-854d-c82ac7882c88",
+      "name": "Telegram Trigger",
+      "webhookId": "f214b5b9-9ccf-4c7d-a1fb-d9550f04548a",
+      "credentials": {
+        "telegramApi": {
+          "id": "gQdNuebQ0TZBJ9sm",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message.text }}",
+        "options": {
+          "systemMessage": "=You are an helpful tasks assistant for Abdulkareem Adamu.  \n\nYou have the ability to carry out tasks like:\n- Creating and sending emails\n- Discuss real estate ideas\n- Give information about Leptons using the available tools:\n\"sheet_leptons_ceos\" tool.\n- Get information on a specific topics\n\nAs your response you don't need to mention to the user what tools you have availble. That should be internal information."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        224,
+        -112
+      ],
+      "id": "b991634e-f544-4e47-ad5c-fd473d77480f",
+      "name": "AI Agent",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {
+          "maxTokensToSample": 1000,
+          "temperature": 0.7
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        128,
+        144
+      ],
+      "id": "572f1277-18d9-4b0a-86c1-7e8e5c077732",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "1fJSGguQ9SsjSz9W",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "contextWindowLength": 1
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        272,
+        144
+      ],
+      "id": "dea067bd-0baa-44e2-b8f9-e20ba81c0696",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+        "text": "={{ $json.output ?? $json.error }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        560,
+        -112
+      ],
+      "id": "acaf7a37-dd2f-485b-8e8f-dc85aae3fe19",
+      "name": "reply",
+      "webhookId": "53430f06-c273-4c5a-ade0-10e9d8c842dc",
+      "credentials": {
+        "telegramApi": {
+          "id": "gQdNuebQ0TZBJ9sm",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1bwI4Wz-lXcDEW9QGunqb_Ug1VY23W621Spz2nZ5GPyY",
+          "mode": "list",
+          "cachedResultName": "leptons",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1bwI4Wz-lXcDEW9QGunqb_Ug1VY23W621Spz2nZ5GPyY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 2058733197,
+          "mode": "list",
+          "cachedResultName": "ceo",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1bwI4Wz-lXcDEW9QGunqb_Ug1VY23W621Spz2nZ5GPyY/edit#gid=2058733197"
+        },
+        "combineFilters": "OR",
+        "options": {
+          "returnFirstMatch": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Return_only_First_Matching_Row', ``, 'boolean') }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        432,
+        128
+      ],
+      "id": "9cfece56-64da-4cc0-9c8c-aab2479ac2e1",
+      "name": "sheet_leptons_ceos",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "rHu0qd5EEIUTQVt0",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.message.voice.file_id }}",
+                    "rightValue": "=",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "exists",
+                      "singleValue": true
+                    },
+                    "id": "c685d98d-da07-4a6b-9fe8-1148a54d231c"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "voice"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "73f4f70d-8590-42f7-877d-3caec922e70b",
+                    "leftValue": "={{ $json.message.text }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "exists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "text"
+            }
+          ]
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -608,
+        -96
+      ],
+      "id": "509f1686-c346-4b75-8967-d1b5514f9d1d",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "operation": "transcribe",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.3,
+      "position": [
+        -192,
+        -192
+      ],
+      "id": "5a06ac44-71e3-4468-9233-1a6dac2ca026",
+      "name": "voice to text",
+      "credentials": {
+        "openAiApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ce201c7e-7cf9-4228-addd-6d8047f75e80",
+              "name": "message.text",
+              "value": "{{ $json.text}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -288,
+        64
+      ],
+      "id": "b5f44254-3bc1-4e1d-a7dd-6085779551e3",
+      "name": "Text"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ce201c7e-7cf9-4228-addd-6d8047f75e80",
+              "name": "message.text",
+              "value": "={{ $json.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        0,
+        -192
+      ],
+      "id": "64ae4fd8-9bfe-4cde-86cf-855cddac261c",
+      "name": "Voice"
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $('Switch').item.json.message.voice.file_id }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -384,
+        -192
+      ],
+      "id": "7949c807-e5a8-4bec-94e8-631880268ff9",
+      "name": "Get a file",
+      "webhookId": "e11caead-2da8-4cd2-ab91-a30d15c13688",
+      "credentials": {
+        "telegramApi": {
+          "id": "gQdNuebQ0TZBJ9sm",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "voice to text": [
+      {
+        "json": {
+          "text": "hello",
+          "usage": {
+            "type": "duration",
+            "seconds": 2
+          }
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "sheet_leptons_ceos": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Get a file",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "voice to text": {
+      "main": [
+        [
+          {
+            "node": "Voice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Text": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Voice": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a file": {
+      "main": [
+        [
+          {
+            "node": "voice to text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "ccaa76db-eaee-4d34-b7ca-832a5009522f",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f4dacff6a251be1a339d209c8e33d7a0524eaedd4c5250abe42b4b37d52518da"
+  },
+  "nodeGroups": [],
+  "id": "ZLdjMAua7e5mokM9",
+  "tags": []
+}
