@@ -1,0 +1,172 @@
+{
+  "name": "search_staff_workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "jsonExample",
+        "jsonExample": "{\n  \"search_by\": \"department\",\n  \"search_value\": \"Finance\"\n}"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -272,
+        32
+      ],
+      "id": "18b5887e-c4e0-4ed7-962c-13b4bc5691ea",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1bwI4Wz-lXcDEW9QGunqb_Ug1VY23W621Spz2nZ5GPyY",
+          "mode": "list",
+          "cachedResultName": "leptons",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1bwI4Wz-lXcDEW9QGunqb_Ug1VY23W621Spz2nZ5GPyY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "staffs",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1bwI4Wz-lXcDEW9QGunqb_Ug1VY23W621Spz2nZ5GPyY/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        112,
+        -80
+      ],
+      "id": "395ba7fa-595d-41a6-9b9c-6d6fe998de3d",
+      "name": "Get row(s) in sheet",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "rHu0qd5EEIUTQVt0",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "language": "pythonNative",
+        "pythonCode": "mapping = {\n    \"name\": \"Name\",\n    \"department\": \"Department\",\n    \"manager\": \"Manager\",\n    \"role\": \"Role\",\n    \"email\": \"Email\",\n}\n\nfor item in _items:\n    data = item[\"json\"]\n\n    search_by = (data.get(\"search_by\") or \"\").lower().strip()\n    search_value = (data.get(\"search_value\") or \"\").strip()\n\n    if search_by not in mapping:\n        raise Exception(\n            f\"search_by must be one of: {', '.join(mapping.keys())}\"\n        )\n\n    if not search_value:\n        raise Exception(\"search_value cannot be empty\")\n\n    item[\"json\"] = {\n        \"column\": mapping[search_by],\n        \"value\": search_value,\n    }\n\nreturn _items"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -64,
+        96
+      ],
+      "id": "a6141997-3942-4353-8e08-08e8ef77d66c",
+      "name": "Code in Python"
+    },
+    {
+      "parameters": {
+        "language": "pythonNative",
+        "pythonCode": "def normalize(text):\n    if text is None:\n        return \"\"\n\n    return \" \".join(str(text).lower().split())\n\n\n# ---------------------------------------\n# Get the search request\n# ---------------------------------------\n\nsearch_item = None\nstaff = []\n\nfor item in _items:\n    data = item[\"json\"]\n\n    if \"column\" in data and \"value\" in data:\n        search_item = data\n    else:\n        staff.append(data)\n\nif search_item is None:\n    raise Exception(\"Search request not found.\")\n\ncolumn = search_item[\"column\"]\nsearch_value = normalize(search_item[\"value\"])\n\nsearch_words = set(search_value.split())\n\nresults = []\n\nfor row in staff:\n\n    cell = normalize(row.get(column, \"\"))\n\n    cell_words = set(cell.split())\n\n    score = len(search_words & cell_words)\n\n    # Exact contains\n    if search_value in cell:\n        score += 100\n\n    # Word matches\n    score += len(search_words.intersection(cell_words))\n\n    if score > 0:\n        row[\"_score\"] = score\n        results.append({\n            \"json\": row\n        })\n\nresults.sort(\n    key=lambda x: x[\"json\"][\"_score\"],\n    reverse=True\n)\n\nreturn results"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        528,
+        -16
+      ],
+      "id": "9767a5b1-6e1b-4de8-a13c-b6fb214a9cbf",
+      "name": "Code in Python1"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        288,
+        64
+      ],
+      "id": "37f24b3d-e9b2-4347-97aa-64f310d2e6c9",
+      "name": "Merge"
+    }
+  ],
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "search_by": "department",
+          "search_value": "finance"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Code in Python",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in Python": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Code in Python1": {
+      "main": [
+        []
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Code in Python1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "8eadf9d9-93c0-4620-a37f-07b5f74a57dd",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f4dacff6a251be1a339d209c8e33d7a0524eaedd4c5250abe42b4b37d52518da"
+  },
+  "nodeGroups": [],
+  "id": "8t8z10OAhMeo0HkP",
+  "tags": []
+}

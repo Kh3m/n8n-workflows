@@ -1,5 +1,5 @@
 {
-  "name": "telegram_ai_assistant_agent",
+  "name": "telegram_ai_assistant_multi-agent",
   "nodes": [
     {
       "parameters": {
@@ -29,7 +29,7 @@
         "promptType": "define",
         "text": "={{ $json.message.text }}",
         "options": {
-          "systemMessage": "=You are an helpful tasks assistant for Abdulkareem Adamu.  \n\nYou have the ability to carry out tasks like:\n- Creating and sending emails\n- Discuss real estate ideas\n- Give information about Leptons using the available tools:\n\"sheet_leptons_ceos\" tool.\n- Get information on a specific topics\n\nAs your response you don't need to mention to the user what tools you have availble. That should be internal information."
+          "systemMessage": "=You are a helpful task assistant for Abdulkareem Adamu.\n\nYou can:\n- Create and send emails.\n- Answer questions about Leptons using available tools.\n- Discuss real estate.\n- Answer general questions.\n\nFor questions about Leptons employees, departments, managers, reporting lines, roles, or email addresses, use the Search Staff tool once. After receiving the result, answer the user directly.\n\nNever mention tool names or internal implementation details."
         }
       },
       "type": "@n8n/n8n-nodes-langchain.agent",
@@ -53,8 +53,8 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
       "typeVersion": 1,
       "position": [
-        112,
-        128
+        128,
+        96
       ],
       "id": "572f1277-18d9-4b0a-86c1-7e8e5c077732",
       "name": "Groq Chat Model",
@@ -75,7 +75,7 @@
       "typeVersion": 1.4,
       "position": [
         288,
-        128
+        112
       ],
       "id": "dea067bd-0baa-44e2-b8f9-e20ba81c0696",
       "name": "Simple Memory"
@@ -101,42 +101,6 @@
         "telegramApi": {
           "id": "gQdNuebQ0TZBJ9sm",
           "name": "Telegram account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "documentId": {
-          "__rl": true,
-          "value": "1bwI4Wz-lXcDEW9QGunqb_Ug1VY23W621Spz2nZ5GPyY",
-          "mode": "list",
-          "cachedResultName": "leptons",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1bwI4Wz-lXcDEW9QGunqb_Ug1VY23W621Spz2nZ5GPyY/edit?usp=drivesdk"
-        },
-        "sheetName": {
-          "__rl": true,
-          "value": 2058733197,
-          "mode": "list",
-          "cachedResultName": "ceo",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1bwI4Wz-lXcDEW9QGunqb_Ug1VY23W621Spz2nZ5GPyY/edit#gid=2058733197"
-        },
-        "combineFilters": "OR",
-        "options": {
-          "returnFirstMatch": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Return_only_First_Matching_Row', ``, 'boolean') }}"
-        }
-      },
-      "type": "n8n-nodes-base.googleSheetsTool",
-      "typeVersion": 4.7,
-      "position": [
-        464,
-        128
-      ],
-      "id": "9cfece56-64da-4cc0-9c8c-aab2479ac2e1",
-      "name": "sheet_leptons_ceos",
-      "credentials": {
-        "googleSheetsOAuth2Api": {
-          "id": "rHu0qd5EEIUTQVt0",
-          "name": "Google Sheets OAuth2 API"
         }
       }
     },
@@ -237,7 +201,7 @@
             {
               "id": "ce201c7e-7cf9-4228-addd-6d8047f75e80",
               "name": "message.text",
-              "value": "{{ $json.text}}",
+              "value": "={{ $json.message.text }}",
               "type": "string"
             }
           ]
@@ -297,24 +261,61 @@
           "name": "Telegram account"
         }
       }
+    },
+    {
+      "parameters": {
+        "description": "Search the Leptons employee directory.\n\nUse for questions about employees, departments, managers, reporting lines, roles, or email addresses.\n\nInputs:\n- search_by: name | email | department | manager | role\n- search_value: value to search for",
+        "workflowId": {
+          "__rl": true,
+          "value": "8t8z10OAhMeo0HkP",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/8t8z10OAhMeo0HkP",
+          "cachedResultName": "n8n-workflows — search_staff_workflow"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "search_by": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('search_by', ``, 'string') }}",
+            "search_value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('search_value', ``, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "search_by",
+              "displayName": "search_by",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "search_value",
+              "displayName": "search_value",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        464,
+        112
+      ],
+      "id": "b231a304-7160-4c71-8e81-1d58bf896e96",
+      "name": "search_staff_workflow"
     }
   ],
-  "pinData": {
-    "voice to text": [
-      {
-        "json": {
-          "text": "hello",
-          "usage": {
-            "type": "duration",
-            "seconds": 2
-          }
-        },
-        "pairedItem": {
-          "item": 0
-        }
-      }
-    ]
-  },
+  "pinData": {},
   "connections": {
     "Telegram Trigger": {
       "main": [
@@ -355,17 +356,6 @@
           {
             "node": "AI Agent",
             "type": "ai_memory",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "sheet_leptons_ceos": {
-      "ai_tool": [
-        [
-          {
-            "node": "AI Agent",
-            "type": "ai_tool",
             "index": 0
           }
         ]
@@ -432,6 +422,17 @@
           }
         ]
       ]
+    },
+    "search_staff_workflow": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": false,
@@ -440,7 +441,7 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "ab67af47-b263-4427-8187-6dcdfc6a823e",
+  "versionId": "006d482d-c94a-4be4-ad88-7b7382ad2836",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "f4dacff6a251be1a339d209c8e33d7a0524eaedd4c5250abe42b4b37d52518da"
